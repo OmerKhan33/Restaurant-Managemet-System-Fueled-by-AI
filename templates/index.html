@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="hero">
+        <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Dining Background" class="background-image">
+        <h1>Welcome to Byte & Bite: The AI Dining Revolution</h1>
+        <div class="options">
+            <a href="/order" class="button">Order Now</a>
+            <a href="/chatbot" class="button">Chat with AI Assistant</a>
+        </div>
+    </div>
+{% endblock %}
