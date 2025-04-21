@@ -25,3 +25,9 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE checkouts (
+    id SERIAL PRIMARY KEY,
+    customer_name VARCHAR(100),
+    order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+    total_amount NUMERIC(10, 2)
+);

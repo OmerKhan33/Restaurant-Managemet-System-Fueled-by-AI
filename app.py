@@ -96,6 +96,35 @@ def logout():
     flash("👋 Logged out successfully.")
     return redirect(url_for('index'))
 
+@app.route('/order_details/<int:order_id>')
+def order_details(order_id):
+    conn = create_connection()
+    if not conn:
+        return "Database connection failed", 500
+
+    cursor = conn.cursor()
+
+    # Fetch order info
+    cursor.execute("SELECT id, summary, item_names, quantities FROM orders WHERE id = %s", (order_id,))
+    order = cursor.fetchone()
+
+    if not order:
+        flash("❌ Order not found.")
+        return redirect('/order')
+
+    # Fetch items and quantities
+    cursor.execute("SELECT item_name, quantity FROM order_items WHERE order_id = %s", (order_id,))
+    items = cursor.fetchall()
+
+    # Simple pricing model (can be replaced with actual DB-driven prices)
+    prices = {'Burger': 5.99, 'Fries': 2.99, 'Drink': 1.99}
+    total = sum(prices[item[0]] * item[1] for item in items)
+
+    cursor.close()
+    conn.close()
+
+    return render_template('order_details.html', order_id=order_id, items=items, total=total, customer=session.get('user', 'Guest'))
+
 @app.route('/submit_order', methods=['POST'])
 def submit_order():
     conn = create_connection()
@@ -140,12 +169,25 @@ def submit_order():
             (order_id, item, qty)
         )
 
+         # Calculate total (use same pricing logic as order_details route)
+    prices = {'Burger': 5.99, 'Fries': 2.99, 'Drink': 1.99}
+    total = sum(prices[item] * qty for item, qty in order_items_to_insert)
+
+# Insert into checkouts
+    customer_name = session.get('user', 'Guest')
+    cursor.execute(
+    "INSERT INTO checkouts (customer_name, order_id, total_amount) VALUES (%s, %s, %s)",
+    (customer_name, order_id, total)
+    )
+
     conn.commit()
     cursor.close()
     conn.close()
 
     flash("✅ Order placed successfully!")
-    return redirect('/order')
+    return redirect(url_for('order_details', order_id=order_id))
+
+
 
 # ------------------------------------------------ #
 
