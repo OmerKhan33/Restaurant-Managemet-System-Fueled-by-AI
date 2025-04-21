@@ -1,0 +1,20 @@
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+
+-- Create orders table with summary, item_names, and quantities
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    summary TEXT,
+    item_names TEXT,
+    quantities TEXT,
+    order_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create order_items table for normalized item storage
+CREATE TABLE order_items (
+    item_id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id),
+    item_name VARCHAR(100),
+    quantity INTEGER
+);
