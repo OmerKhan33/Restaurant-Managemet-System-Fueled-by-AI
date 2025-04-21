@@ -6,6 +6,108 @@
     <title>Byte & Bite</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Chatbot Styles */
+        #chatbot-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #2969f4;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #chatbot-container {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            width: 300px;
+            max-height: 400px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        #chatbot-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        #chatbot-input {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+
+        #chatbot-input input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        #chatbot-input button {
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        
+    </style>
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: 60px auto;
+        padding: 30px;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(227, 93, 93, 0.1);
+        text-align: center;
+    }
+    
+    .form-container h2 {
+        margin-bottom: 20px;
+    }
+    
+    .form-container input {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #e32c2c;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+    
+    .form-container button {
+        padding: 12px 25px;
+        background-color: #21f641;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    
+    .form-container button:hover {
+        background-color: #22e6a4;
+    }
+    </style>
+    
 </head>
 <body>
     <header class="navbar">
@@ -16,15 +118,24 @@
         <nav class="navbar-center">
             <a href="/"><i class="fas fa-home"></i> Home</a>
             <a href="/order"><i class="fas fa-utensils"></i> Order</a>
-            <a href="/chatbot"><i class="fas fa-robot"></i> Chatbot</a>
             <a href="/insights"><i class="fas fa-chart-line"></i> Insights</a>
         </nav>
-        <div class="navbar-right theme-toggle">
-            <span id="theme-label">Light Mode</span>
-            <label class="switch">
-                <input type="checkbox" id="theme-switch">
-                <span class="slider round"></span>
-            </label>
+        <div class="navbar-right" style="display: flex; align-items: center; gap: 15px;">
+            {% if 'user' in session %}
+                <span>👋 Hello, {{ session['user'] }}</span>
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="{{ url_for('signup') }}"><i class="fas fa-user-plus"></i> Sign Up</a>
+            {% endif %}
+        
+            <div class="theme-toggle">
+                <span id="theme-label">Light Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+            </div>
         </div>
     </header>
 
@@ -36,6 +147,19 @@
         <p>&copy; 2025 Byte & Bite. All Rights Reserved.</p>
     </footer>
 
+    <!-- Chatbot HTML -->
+    <div id="chatbot-container">
+        <div id="chatbot-messages">
+            <p><strong>Bot:</strong> Hi! How can I assist you today? 🍔🤖</p>
+        </div>
+        <div id="chatbot-input">
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <button id="chatbot-button" onclick="toggleChatbot()"><i class="fas fa-comment-alt"></i></button>
+
+    <!-- Theme Script -->
     <script>
         const toggleSwitch = document.getElementById('theme-switch');
         const htmlTag = document.documentElement;
@@ -53,8 +177,9 @@
             themeLabel.textContent = theme === 'dark' ? 'Dark Mode' : 'Light Mode';
         });
     </script>
+
+    <!-- Slideshow Script -->
     <script>
-        // Slideshow Functionality
         let slideIndex = 0;
         showSlides();
     
@@ -66,9 +191,40 @@
             slideIndex++;
             if (slideIndex > slides.length) {slideIndex = 1}    
             slides[slideIndex-1].style.display = "block";  
-            setTimeout(showSlides, 7000); // Change image every 5 seconds
+            setTimeout(showSlides, 5000); // now 5s for faster slides
         }
     </script>
-    
+
+    <!-- Chatbot JS -->
+    <script>
+        function toggleChatbot() {
+            const container = document.getElementById("chatbot-container");
+            container.style.display = container.style.display === "flex" ? "none" : "flex";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value.trim();
+            if (message === "") return;
+
+            const messagesContainer = document.getElementById("chatbot-messages");
+
+            // Show user's message
+            messagesContainer.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+
+            // Basic bot reply
+            let reply = "I'm still learning! For now, try navigating to 'Order' or 'Insights'. 😊";
+            if (message.toLowerCase().includes("order")) {
+                reply = "You can click on the 'Order' button above to place your meal! 🍕";
+            } else if (message.toLowerCase().includes("hello") || message.toLowerCase().includes("hi")) {
+                reply = "Hello there! 👋 How can I help you today?";
+            }
+
+            messagesContainer.innerHTML += `<p><strong>Bot:</strong> ${reply}</p>`;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            input.value = "";
+        }
+    </script>
 </body>
 </html>

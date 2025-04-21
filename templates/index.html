@@ -1,79 +1,81 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <style>
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 60px 20px;
-            background: var(--card-bg);
-            position: relative; /* Make it relative for positioning the buttons */
-        }
+<style>
+    /* Hero Section */
+    .hero {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--card-bg);
+        position: relative;
+    }
 
-        .slideshow-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            overflow: hidden;
-        }
+    .slideshow-container {
+        position: relative;
+        width: 100%;
+        height: 300px; /* Decreased from 400px */
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-        .background-image {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            opacity: 0;
-            transition: opacity 0.1s ease-in-out; /* Reduced transition time */
-        }
+    .background-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Changed from cover to contain */
+        border-radius: var(--border-radius);
+        opacity: 0;
+        transition: opacity 0.1s ease-in-out;
+    }
 
-        /* Showing the active background image */
-        .background-image.active {
-            opacity: 1;
-        }
+    .background-image.active {
+        opacity: 1;
+    }
 
-        .nav-button {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            font-size: 2rem;
-            padding: 10px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 10;
-            transition: background-color 0.3s;
-        }
+    .nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 2rem;
+        padding: 10px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10;
+        transition: background-color 0.3s;
+    }
 
-        .nav-button:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
+    .nav-button:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
 
-        .nav-button.left {
-            left: 20px;
-        }
+    .nav-button.left {
+        left: 20px;
+    }
 
-        .nav-button.right {
-            right: 20px;
-        }
+    .nav-button.right {
+        right: 20px;
+    }
 
-        .options .button {
-            margin: 20px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background-color: #5944df;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
+    .options .button {
+        margin: 20px;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        background-color: #5944df;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
 
-        .options .button:hover {
-            background-color: #582fee;
-        }
-    </style>
+    .options .button:hover {
+        background-color: #582fee;
+    }
+</style>
 
     <div class="hero">
         <!-- Slideshow Container -->
@@ -93,10 +95,10 @@
         <button class="nav-button left" onclick="changeImage('prev')">&#10094;</button>
         <button class="nav-button right" onclick="changeImage('next')">&#10095;</button>
 
-        <h1>Welcome to Byte & Bite: The AI Dining Revolution</h1>
+        <h2>Welcome to Byte & Bite: The AI Dining Revolution</h2>
         <div class="options">
             <a href="/order" class="button">Order Now</a>
-            <a href="/chatbot" class="button">Chat with AI Assistant</a>
+            <!-- <a href="/chatbot" class="button">Chat with AI Assistant</a> -->
         </div>
     </div>
 
