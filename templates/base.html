@@ -6,109 +6,154 @@
     <title>Byte & Bite</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Toast Styles -->
     <style>
-        /* Chatbot Styles */
-        #chatbot-button {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background-color: #2969f4;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 55px;
-            height: 55px;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
+        /* Chatbot Button - pinned at bottom right */
+      #chatbot-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #2969f4;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
 
-        #chatbot-container {
+/* Chatbot Popup */
+#chatbot-container {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    width: 300px;
+    max-height: 400px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 999;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+/* Chat Messages */
+#chatbot-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 14px;
+}
+
+/* Chat Input */
+#chatbot-input {
+    display: flex;
+    border-top: 1px solid #ccc;
+}
+
+#chatbot-input input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+}
+
+#chatbot-input button {
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+        .toast {
             position: fixed;
-            bottom: 90px;
-            right: 25px;
-            width: 300px;
-            max-height: 400px;
-            background-color: white;
-            border: 1px solid #ccc;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin-top: 10px;
             border-radius: 8px;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 999;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeSlideIn 0.5s ease, fadeOut 0.5s ease 3s forwards;
+            z-index: 9999;
+            font-size: 16px;
         }
 
-        #chatbot-messages {
-            flex: 1;
-            padding: 10px;
-            overflow-y: auto;
-            font-size: 14px;
+        .toast.error {
+            background: #f44336;
         }
 
-        #chatbot-input {
-            display: flex;
-            border-top: 1px solid #ccc;
+        .toast.info {
+            background: #2196F3;
         }
 
-        #chatbot-input input {
-            flex: 1;
-            border: none;
-            padding: 10px;
-            font-size: 14px;
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        #chatbot-input button {
-            border: none;
-            background-color: #4CAF50;
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+    </style>
+
+    <!-- Form Container Styling -->
+    <style>
+        .form-container {
+            max-width: 400px;
+            margin: 60px auto;
+            padding: 30px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(227, 93, 93, 0.1);
+            text-align: center;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-container input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #e32c2c;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-container button {
+            padding: 12px 25px;
+            background-color: #21f641;
             color: white;
-            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
         }
 
-        
+        .form-container button:hover {
+            background-color: #22e6a4;
+        }
     </style>
-
-<style>
-    .form-container {
-        max-width: 400px;
-        margin: 60px auto;
-        padding: 30px;
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: 0 2px 8px rgba(227, 93, 93, 0.1);
-        text-align: center;
-    }
-    
-    .form-container h2 {
-        margin-bottom: 20px;
-    }
-    
-    .form-container input {
-        width: 90%;
-        padding: 12px;
-        margin: 10px 0;
-        border: 1px solid #e32c2c;
-        border-radius: 6px;
-        font-size: 1rem;
-    }
-    
-    .form-container button {
-        padding: 12px 25px;
-        background-color: #21f641;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    
-    .form-container button:hover {
-        background-color: #22e6a4;
-    }
-    </style>
-    
 </head>
+
 <body>
     <header class="navbar">
         <div class="navbar-left">
@@ -128,7 +173,6 @@
                 <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
                 <a href="{{ url_for('signup') }}"><i class="fas fa-user-plus"></i> Sign Up</a>
             {% endif %}
-        
             <div class="theme-toggle">
                 <span id="theme-label">Light Mode</span>
                 <label class="switch">
@@ -147,6 +191,17 @@
         <p>&copy; 2025 Byte & Bite. All Rights Reserved.</p>
     </footer>
 
+    <!-- Flash Toast Container -->
+    <div id="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <!-- Chatbot HTML -->
     <div id="chatbot-container">
         <div id="chatbot-messages">
@@ -159,7 +214,7 @@
     </div>
     <button id="chatbot-button" onclick="toggleChatbot()"><i class="fas fa-comment-alt"></i></button>
 
-    <!-- Theme Script -->
+    <!-- Theme Toggle Script -->
     <script>
         const toggleSwitch = document.getElementById('theme-switch');
         const htmlTag = document.documentElement;
@@ -182,49 +237,77 @@
     <script>
         let slideIndex = 0;
         showSlides();
-    
+
         function showSlides() {
             let slides = document.getElementsByClassName("slide");
             for (let i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";  
+                slides[i].style.display = "none";
             }
             slideIndex++;
-            if (slideIndex > slides.length) {slideIndex = 1}    
-            slides[slideIndex-1].style.display = "block";  
-            setTimeout(showSlides, 5000); // now 5s for faster slides
+            if (slideIndex > slides.length) { slideIndex = 1 }
+            if (slides[slideIndex - 1]) {
+                slides[slideIndex - 1].style.display = "block";
+            }
+            setTimeout(showSlides, 5000);
         }
     </script>
 
-    <!-- Chatbot JS -->
+    <!-- Chatbot Script -->
+    
     <script>
         function toggleChatbot() {
             const container = document.getElementById("chatbot-container");
             container.style.display = container.style.display === "flex" ? "none" : "flex";
         }
-
+    
         function sendMessage() {
             const input = document.getElementById("user-input");
             const message = input.value.trim();
             if (message === "") return;
-
+    
             const messagesContainer = document.getElementById("chatbot-messages");
-
-            // Show user's message
             messagesContainer.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
-
-            // Basic bot reply
+    
             let reply = "I'm still learning! For now, try navigating to 'Order' or 'Insights'. 😊";
             if (message.toLowerCase().includes("order")) {
                 reply = "You can click on the 'Order' button above to place your meal! 🍕";
             } else if (message.toLowerCase().includes("hello") || message.toLowerCase().includes("hi")) {
                 reply = "Hello there! 👋 How can I help you today?";
             }
-
+    
             messagesContainer.innerHTML += `<p><strong>Bot:</strong> ${reply}</p>`;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
+    
             input.value = "";
         }
     </script>
+    
+    <!-- Toast Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            });
+        });
+    </script>
+    <!-- Chatbot UI -->
+    <div id="chatbot-container">
+    <div id="chatbot-messages">
+        <p><strong>Bot:</strong> Hi! How can I assist you today? 🍔🤖</p>
+    </div>
+    <div id="chatbot-input">
+        <input type="text" id="user-input" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+       </div>
+</div>
+
+<!-- Chatbot Toggle Button -->
+<button id="chatbot-button" onclick="toggleChatbot()">
+    <i class="fas fa-robot"></i>
+</button>
+
 </body>
 </html>

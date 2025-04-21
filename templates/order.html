@@ -4,17 +4,7 @@
 <div class="order-page">
     <h2>Choose Your Meal</h2>
 
-    <!-- Flash Message -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for message in messages %}
-                    <p class="flash">{{ message }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-
+    
     <form method="POST" action="/submit_order">
         <div class="menu">
             <div class="menu-item">
