@@ -1,28 +1,42 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="order-page">
-        <h2>Choose Your Meal</h2>
+<div class="order-page">
+    <h2>Choose Your Meal</h2>
+
+    <!-- Flash Message -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/submit_order">
         <div class="menu">
             <div class="menu-item">
                 <img src="{{ url_for('static', filename='images/burger.jpg') }}" alt="Burger">
                 <h3>Burger</h3>
                 <p>$5.99</p>
-                <button>Add to Cart</button>
+                <input type="number" name="Burger" min="0" value="0">
             </div>
             <div class="menu-item">
                 <img src="{{ url_for('static', filename='images/fries.jpg') }}" alt="Fries">
                 <h3>Fries</h3>
                 <p>$2.99</p>
-                <button>Add to Cart</button>
+                <input type="number" name="Fries" min="0" value="0">
             </div>
             <div class="menu-item">
                 <img src="{{ url_for('static', filename='images/drink.jpg') }}" alt="Drink">
                 <h3>Drink</h3>
                 <p>$1.99</p>
-                <button>Add to Cart</button>
+                <input type="number" name="Drink" min="0" value="0">
             </div>
         </div>
-        <button class="checkout">Proceed to Checkout</button>
-    </div>
+        <button type="submit" class="checkout">Proceed to Checkout</button>
+    </form>
+</div>
 {% endblock %}
