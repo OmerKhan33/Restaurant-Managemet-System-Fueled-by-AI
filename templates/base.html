@@ -1,124 +1,74 @@
-{% extends 'base.html' %}
-
-{% block content %}
-    <style>
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 60px 20px;
-            background: var(--card-bg);
-            position: relative; /* Make it relative for positioning the buttons */
-        }
-
-        .slideshow-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            overflow: hidden;
-        }
-
-        .background-image {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            opacity: 0;
-            transition: opacity 0.1s ease-in-out; /* Reduced transition time */
-        }
-
-        /* Showing the active background image */
-        .background-image.active {
-            opacity: 1;
-        }
-
-        .nav-button {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            font-size: 2rem;
-            padding: 10px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 10;
-            transition: background-color 0.3s;
-        }
-
-        .nav-button:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-
-        .nav-button.left {
-            left: 20px;
-        }
-
-        .nav-button.right {
-            right: 20px;
-        }
-
-        .options .button {
-            margin: 20px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background-color: #5944df;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .options .button:hover {
-            background-color: #582fee;
-        }
-    </style>
-
-    <div class="hero">
-        <!-- Slideshow Container -->
-        <div class="slideshow-container">
-            <div class="slide fade">
-                <img src="{{ url_for('static', filename='images/bg1.jpg') }}" alt="Background 1" class="background-image">
-            </div>
-            <div class="slide fade">
-                <img src="{{ url_for('static', filename='images/bg2.jpg') }}" alt="Background 2" class="background-image">
-            </div>
-            <div class="slide fade">
-                <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Background 3" class="background-image">
-            </div>
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byte & Bite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-left">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Byte & Bite Logo" class="logo-modern">
+            <span class="brand-name">Byte & Bite</span>
         </div>
-        
-        <!-- Left and Right Navigation Buttons -->
-        <button class="nav-button left" onclick="changeImage('prev')">&#10094;</button>
-        <button class="nav-button right" onclick="changeImage('next')">&#10095;</button>
-
-        <h1>Welcome to Byte & Bite: The AI Dining Revolution</h1>
-        <div class="options">
-            <a href="/order" class="button">Order Now</a>
-            <a href="/chatbot" class="button">Chat with AI Assistant</a>
+        <nav class="navbar-center">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/order"><i class="fas fa-utensils"></i> Order</a>
+            <a href="/chatbot"><i class="fas fa-robot"></i> Chatbot</a>
+            <a href="/insights"><i class="fas fa-chart-line"></i> Insights</a>
+        </nav>
+        <div class="navbar-right theme-toggle">
+            <span id="theme-label">Light Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="theme-switch">
+                <span class="slider round"></span>
+            </label>
         </div>
-    </div>
+    </header>
 
-    <!-- JavaScript to control image change -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Byte & Bite. All Rights Reserved.</p>
+    </footer>
+
     <script>
-        let currentImage = 0;
-        const images = document.querySelectorAll('.background-image');
+        const toggleSwitch = document.getElementById('theme-switch');
+        const htmlTag = document.documentElement;
+        const themeLabel = document.getElementById('theme-label');
 
-        // Set the first image to be visible
-        images[currentImage].classList.add('active');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        htmlTag.setAttribute('data-theme', savedTheme);
+        toggleSwitch.checked = savedTheme === 'dark';
+        themeLabel.textContent = savedTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
 
-        // Change the image based on the direction (next or prev)
-        function changeImage(direction) {
-            images[currentImage].classList.remove('active'); // Hide the current image
-
-            if (direction === 'next') {
-                currentImage = (currentImage + 1) % images.length; // Move to the next image
-            } else if (direction === 'prev') {
-                currentImage = (currentImage - 1 + images.length) % images.length; // Move to the previous image
+        toggleSwitch.addEventListener('change', function () {
+            const theme = this.checked ? 'dark' : 'light';
+            htmlTag.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeLabel.textContent = theme === 'dark' ? 'Dark Mode' : 'Light Mode';
+        });
+    </script>
+    <script>
+        // Slideshow Functionality
+        let slideIndex = 0;
+        showSlides();
+    
+        function showSlides() {
+            let slides = document.getElementsByClassName("slide");
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";  
             }
-
-            images[currentImage].classList.add('active'); // Show the new image
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}    
+            slides[slideIndex-1].style.display = "block";  
+            setTimeout(showSlides, 7000); // Change image every 5 seconds
         }
     </script>
-{% endblock %}
+    
+</body>
+</html>
