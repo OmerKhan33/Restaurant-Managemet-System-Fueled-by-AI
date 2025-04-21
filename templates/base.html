@@ -1,26 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Byte & Bite</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <header>
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
-        <nav>
-            <a href="/">Home</a>
-            <a href="/order">Order</a>
-            <a href="/chatbot">Chatbot</a>
-            <a href="/insights">Insights</a>
-        </nav>
-    </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-    <footer>
-        <p>&copy; 2025 Byte & Bite. All Rights Reserved.</p>
-    </footer>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-bg);
+            position: relative; /* Make it relative for positioning the buttons */
+        }
+
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .background-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            opacity: 0;
+            transition: opacity 0.1s ease-in-out; /* Reduced transition time */
+        }
+
+        /* Showing the active background image */
+        .background-image.active {
+            opacity: 1;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 2rem;
+            padding: 10px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .nav-button.left {
+            left: 20px;
+        }
+
+        .nav-button.right {
+            right: 20px;
+        }
+
+        .options .button {
+            margin: 20px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: #5944df;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .options .button:hover {
+            background-color: #582fee;
+        }
+    </style>
+
+    <div class="hero">
+        <!-- Slideshow Container -->
+        <div class="slideshow-container">
+            <div class="slide fade">
+                <img src="{{ url_for('static', filename='images/bg1.jpg') }}" alt="Background 1" class="background-image">
+            </div>
+            <div class="slide fade">
+                <img src="{{ url_for('static', filename='images/bg2.jpg') }}" alt="Background 2" class="background-image">
+            </div>
+            <div class="slide fade">
+                <img src="{{ url_for('static', filename='images/background.jpg') }}" alt="Background 3" class="background-image">
+            </div>
+        </div>
+        
+        <!-- Left and Right Navigation Buttons -->
+        <button class="nav-button left" onclick="changeImage('prev')">&#10094;</button>
+        <button class="nav-button right" onclick="changeImage('next')">&#10095;</button>
+
+        <h1>Welcome to Byte & Bite: The AI Dining Revolution</h1>
+        <div class="options">
+            <a href="/order" class="button">Order Now</a>
+            <a href="/chatbot" class="button">Chat with AI Assistant</a>
+        </div>
+    </div>
+
+    <!-- JavaScript to control image change -->
+    <script>
+        let currentImage = 0;
+        const images = document.querySelectorAll('.background-image');
+
+        // Set the first image to be visible
+        images[currentImage].classList.add('active');
+
+        // Change the image based on the direction (next or prev)
+        function changeImage(direction) {
+            images[currentImage].classList.remove('active'); // Hide the current image
+
+            if (direction === 'next') {
+                currentImage = (currentImage + 1) % images.length; // Move to the next image
+            } else if (direction === 'prev') {
+                currentImage = (currentImage - 1 + images.length) % images.length; // Move to the previous image
+            }
+
+            images[currentImage].classList.add('active'); // Show the new image
+        }
+    </script>
+{% endblock %}
