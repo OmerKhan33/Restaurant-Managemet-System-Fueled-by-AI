@@ -15,10 +15,6 @@ def index():
 def order():
     return render_template('order.html')
 
-@app.route('/chatbot')
-def chatbot():
-    return render_template('chatbot.html')
-
 @app.route('/insights')
 def insights():
     if 'user' not in session:
