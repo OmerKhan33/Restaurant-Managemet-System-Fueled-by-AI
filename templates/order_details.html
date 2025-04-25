@@ -1,4 +1,3 @@
-{% extends 'base.html' %}
 
 {% block content %}
 <style>
@@ -53,9 +52,16 @@
 </style>
 
 <div class="receipt" id="receipt">
+    <div style="text-align: center;">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="max-width: 120px; margin-bottom: 10px;">
+    </div>
+    
     <h2>🧾 Order Receipt</h2>
     <p><strong>Customer:</strong> {{ customer }}</p>
     <p><strong>Order ID:</strong> {{ order_id }}</p>
+    <p><strong>Date & Time:</strong> <span id="datetime"></span></p>
+
+
     <hr>
     {% for item, qty in items %}
         <div class="receipt-item">
@@ -75,4 +81,23 @@
         window.print();
     }
 </script>
+
+<script>
+    function printReceipt() {
+        window.print();
+    }
+
+    // Add current date & time
+    const now = new Date();
+    const formattedDateTime = now.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+    document.getElementById('datetime').innerText = formattedDateTime;
+</script>
+
 {% endblock %}
