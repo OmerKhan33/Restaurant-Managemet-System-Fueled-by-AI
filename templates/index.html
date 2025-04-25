@@ -79,7 +79,38 @@
 
     <div class="hero">
         <!-- Slideshow Container -->
+
+        <style>
+            .slideshow-container {
+                position: relative;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+        
+            .slide {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                transition: none; /* No fade */
+            }
+        
+            .slide.active {
+                opacity: 1;
+                z-index: 1;
+            }
+        
+            .background-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        </style>
+        
+        
         <div class="slideshow-container">
+
             <div class="slide fade">
                 <img src="{{ url_for('static', filename='images/bg1.jpg') }}" alt="Background 1" class="background-image">
             </div>
@@ -123,4 +154,25 @@
             images[currentImage].classList.add('active'); // Show the new image
         }
     </script>
+
+<script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function showSlides() {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+        });
+
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add('active');
+    }
+
+    // Initially show the first slide
+    slides[0].classList.add('active');
+
+    // Change slide every 2 seconds (adjust speed here)
+    setInterval(showSlides, 2000);
+</script>
+
 {% endblock %}
