@@ -1,5 +1,6 @@
 
 import psycopg2 as pg
+from psycopg2.extras import LogicalReplicationConnection
 
 def create_connection():
     try:
@@ -8,7 +9,8 @@ def create_connection():
             database="postgres",
             user="postgres",
             password="585904",
-            port="5432"
+            port="5432",
+            connection_factory=LogicalReplicationConnection
         )
         print("✅ Database connection successful")
         return conn

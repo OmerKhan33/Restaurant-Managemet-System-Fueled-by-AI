@@ -1,12 +1,48 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from connection import create_connection
+from pymongo import MongoClient
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Needed for flash/session management
 
 # -------------------- ROUTES -------------------- #
+# MongoDB connection
+mongo_client = MongoClient('mongodb://localhost:27017/')
+mongo_db = mongo_client['dbms_proj']
+mongo_orders_collection = mongo_db['orders']
 
+@app.route('/sync_orders')
+def sync_orders():
+    conn = create_connection()
+    if not conn:
+        flash("PostgreSQL connection failed.")
+        return redirect(url_for('index'))
+
+    cursor = conn.cursor()
+
+    # Fetch all orders
+    cursor.execute("SELECT id, summary, item_names, quantities FROM orders")
+    orders = cursor.fetchall()
+
+    # Clear MongoDB collection first (optional, to avoid duplicates)
+    mongo_orders_collection.delete_many({})
+
+    # Insert into MongoDB
+    for order in orders:
+        order_doc = {
+            'order_id': order[0],
+            'summary': order[1],
+            'item_names': order[2],
+            'quantities': order[3]
+        }
+        mongo_orders_collection.insert_one(order_doc)
+
+    cursor.close()
+    conn.close()
+
+    flash("✅ Orders synced to MongoDB successfully!")
+    return redirect(url_for('index'))
 @app.route('/')
 def index():
     return render_template('index.html')
