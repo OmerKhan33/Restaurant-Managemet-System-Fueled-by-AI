@@ -3,6 +3,16 @@ from tkinter import messagebox, simpledialog
 import os
 from pymongo import MongoClient
 from tkinter import messagebox
+from admin_orders import *
+from admin_users import *
+from admin_order_items import *
+from admin_checkouts import *
+from sync_to_firebase import *
+from deleted_data import *
+from menu_items import *
+from feedbacks import *
+from view_order_summary_gui import *
+
 
 # PostgreSQL connection function (your own)
 from connection import create_connection
@@ -15,7 +25,7 @@ SECRET_KEY = "runtimeterror"  # 🔒 Change this to your own secret key
 
 # Credentials file
 # paste the address of the the txt file like in my case it is as following and remember to use double \\
-CREDENTIALS_FILE = 'D:\\My Coding\\Byte&Bite_AI_Dining_Revolution\\credentials.txt'
+CREDENTIALS_FILE = r'D:\My Coding\final_project_testing\Byte&Bite_AI_Dining_Revolution\credentials.txt'
 
 
 ## Important ====================================================================
@@ -50,7 +60,89 @@ def add_new_admin():
         messagebox.showinfo("Success", "New admin added successfully!")
 
 # ============================================================================================================
+def open_orders():
+    orders_window = AdminOrdersScreen()
+    orders_window.mainloop()
 
+def open_users():
+    win = AdminUsersScreen()
+    win.mainloop()
+
+def open_order_items():
+    win = AdminOrderItemsScreen()
+    win.mainloop()
+
+def open_checkouts():
+    win = AdminCheckoutsScreen()
+    win.mainloop()
+
+def open_realtime_database_upload_screen():
+    launch_realtime_db_app()
+    
+    
+def open_del_screen():
+    open_deleted_data_window()
+
+def open_menu_items():
+    AdminMenuItemsScreen().mainloop()
+    
+def open_feedback():
+    win = AdminFeedbackScreen()
+    win.mainloop()
+
+def open_view_order_summary():
+    win = OrderSummaryScreen()
+    win.mainloop()
+
+
+
+def open_data_view_screen():
+    data_view_window = tk.Toplevel()
+    data_view_window.title("Data View Panel")
+    data_view_window.geometry("800x600")
+
+    # Title
+    title_label = tk.Label(data_view_window, text="Data View Panel", font=('Arial', 22, 'bold'), fg='darkgreen')
+    title_label.pack(pady=10)
+
+    # Frame for buttons
+    button_frame = tk.Frame(data_view_window)
+    button_frame.pack(pady=10)
+
+    # View Orders Button
+    view_orders_button = tk.Button(button_frame, text="View Orders", font=('Arial', 14), width=20, height=2, bg='purple', fg='white',command=open_orders)
+    view_orders_button.pack(pady=10)
+
+    users_button = tk.Button(button_frame, text="View Users", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_users)
+    users_button.pack(pady=10)
+
+    users_button = tk.Button(button_frame, text="View Order Items", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_order_items)
+    users_button.pack(pady=10)
+
+    users_button = tk.Button(button_frame, text="View Checkouts", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_checkouts)
+    users_button.pack(pady=10)
+
+    menu_items_button = tk.Button(button_frame, text="View Menu Items", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_menu_items)
+    menu_items_button.pack(pady=10)
+
+    feedback_button = tk.Button(button_frame, text="View Feedback", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_feedback)
+    feedback_button.pack(pady=10)
+
+    feedback_button = tk.Button(button_frame, text="View a View", font=('Arial', 14), width=20, height=2, bg='purple', fg='white', command=open_view_order_summary)
+    feedback_button.pack(pady=10)
+
+
+
+    # Back Button
+    def go_back_to_main():
+        data_view_window.destroy()
+
+    back_button = tk.Button(data_view_window, text="Back to Main Screen", command=go_back_to_main, font=('Arial', 12), width=20, bg='gray', fg='white')
+    back_button.pack(pady=30)
+
+
+
+#=====================================================================================================================
 
 def sync_order_items_to_mongodb():
     try:
@@ -64,14 +156,14 @@ def sync_order_items_to_mongodb():
         mongo_db = mongo_client['dbms_proj']
         mongo_order_items_collection = mongo_db['order_items']
 
-        cursor.execute("SELECT item_id, order_id,item_name, quantity FROM order_items")
+        cursor.execute("SELECT id, order_id,item_name, quantity FROM order_items")
         order_items = cursor.fetchall()
 
         mongo_order_items_collection.delete_many({})
 
         for item in order_items:
             order_item_doc = {
-                'item_id': item[0],
+                'id': item[0],
                 'order_id': item[1],
                 'item_name': item[2],
                 'quantity': int(item[3])
@@ -101,13 +193,15 @@ def sync_order_items_to_postgresql():
 
         mongo_order_items = mongo_order_items_collection.find()
 
-        cursor.execute("TRUNCATE TABLE order_items RESTART IDENTITY CASCADE")
+        cursor.execute("TRUNCATE TABLE order_items CASCADE")
+        cursor.execute("delete from del_order_items")
+
         conn.commit()
 
         for item in mongo_order_items:
             cursor.execute(
-                "INSERT INTO order_items (item_id , order_id , item_name , quantity) VALUES (%s, %s, %s,%s)",
-                (item['item_id'], item['order_id'], item['item_name'],item['quantity'])
+                "INSERT INTO order_items (id , order_id , item_name , quantity) VALUES (%s, %s, %s,%s)",
+                (item['id'], item['order_id'], item['item_name'],item['quantity'])
             )
         conn.commit()
 
@@ -156,6 +250,112 @@ def sync_checkouts_to_mongodb():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
+
+import psycopg2
+from pymongo import MongoClient
+
+def sync_postgres_to_mongo():
+    # PostgreSQL connection
+    pg_conn = psycopg2.connect(
+        dbname='dbms_project',
+        user='postgres',
+        password='pgadmin4',
+        host='127.0.0.1',
+        port='5432'
+    )
+    pg_cursor = pg_conn.cursor()
+
+    # MongoDB connection
+    mongo_client = MongoClient("mongodb://localhost:27017/")
+    mongo_db = mongo_client["dbms_proj"]
+    mongo_collection = mongo_db["menu_items"]
+
+    # Clear existing MongoDB data (optional, for full sync)
+    mongo_collection.delete_many({})
+
+    # Fetch data from PostgreSQL
+    pg_cursor.execute("SELECT id, name, description, price, image, category FROM menu_items")
+    rows = pg_cursor.fetchall()
+
+    # Convert and insert into MongoDB
+    for row in rows:
+        document = {
+            "id": row[0],
+            "name": row[1],
+            "description": row[2],
+            "price": float(row[3]),
+            "image": row[4],
+            "category": row[5]
+        }
+        mongo_collection.insert_one(document)
+
+    # Close connections
+    pg_cursor.close()
+    pg_conn.close()
+    mongo_client.close()
+
+    print("✅ PostgreSQL 'menu_items' synced to MongoDB 'menu_items' collection successfully.")
+    messagebox.showinfo('Done','Successfull')
+
+
+import psycopg2
+from pymongo import MongoClient
+
+def sync_mongo_to_postgres():
+    # PostgreSQL connection
+    pg_conn = psycopg2.connect(
+        dbname='dbms_project',
+        user='postgres',
+        password='pgadmin4',
+        host='127.0.0.1',
+        port='5432'
+    )
+    pg_cursor = pg_conn.cursor()
+
+    # MongoDB connection
+    mongo_client = MongoClient("mongodb://localhost:27017/")
+    mongo_db = mongo_client["dbms_proj"]
+    mongo_collection = mongo_db["menu_items"]
+
+    # Optional: Clear existing PostgreSQL data (for full sync)
+    pg_cursor.execute("TRUNCATE TABLE menu_items CASCADE")
+    pg_cursor.execute("delete from del_menu_items")
+
+    # Fetch data from MongoDB
+    mongo_docs = mongo_collection.find()
+
+    # Insert into PostgreSQL
+    for doc in mongo_docs:
+        pg_cursor.execute("""
+            INSERT INTO menu_items (id, name, description, price, image, category)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                description = EXCLUDED.description,
+                price = EXCLUDED.price,
+                image = EXCLUDED.image,
+                category = EXCLUDED.category
+        """, (
+            doc.get("id"),
+            doc.get("name"),
+            doc.get("description"),
+            float(doc.get("price")),
+            doc.get("image"),
+            doc.get("category")
+        ))
+
+    # Commit changes and close connections
+    pg_conn.commit()
+    pg_cursor.close()
+    pg_conn.close()
+    mongo_client.close()
+
+    print("✅ MongoDB 'menu_items' synced to PostgreSQL 'menu_items' table successfully.")
+    messagebox.showinfo('Done','Successfull')
+
+
+
+
 def sync_checkouts_to_postgresql():
     try:
         conn = create_connection()
@@ -170,7 +370,8 @@ def sync_checkouts_to_postgresql():
 
         mongo_checkouts = mongo_checkouts_collection.find()
 
-        cursor.execute("TRUNCATE TABLE checkouts RESTART IDENTITY CASCADE")
+        cursor.execute("TRUNCATE TABLE checkouts CASCADE")
+        cursor.execute("delete from del_checkouts")
         conn.commit()
 
         for checkout in mongo_checkouts:
@@ -209,7 +410,8 @@ def sync_orders_to_postgresql():
         mongo_orders = mongo_orders_collection.find()
 
         # Optional: Clear existing PostgreSQL orders table (to avoid duplicates)
-        cursor.execute("TRUNCATE TABLE orders RESTART IDENTITY CASCADE")
+        cursor.execute("TRUNCATE TABLE orders CASCADE")
+        cursor.execute("delete from del_orders cascade")
 
         conn.commit()
 
@@ -248,7 +450,8 @@ def sync_users_to_postgresql():
         mongo_users = mongo_users_collection.find()
 
         # Optional: Clear existing PostgreSQL users table (to avoid duplicates)
-        cursor.execute("DELETE FROM users")
+        cursor.execute("truncate table users cascade")
+        cursor.execute("delete from del_users")
         conn.commit()
 
         # Insert into PostgreSQL
@@ -353,64 +556,178 @@ def sync_orders():
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 
+
+import psycopg2
+from pymongo import MongoClient
+import base64
+
+def sync_feedbacks_postgres_to_mongo():
+    # PostgreSQL connection
+    pg_conn = psycopg2.connect(
+        dbname='dbms_project',
+        user='postgres',
+        password='pgadmin4',
+        host='127.0.0.1',
+        port='5432'
+    )
+    pg_cursor = pg_conn.cursor()
+
+    # MongoDB connection
+    mongo_client = MongoClient("mongodb://localhost:27017/")
+    mongo_db = mongo_client["dbms_proj"]
+    mongo_collection = mongo_db["feedbacks"]
+
+    # Clear existing MongoDB data
+    mongo_collection.delete_many({})
+
+    # Fetch data from PostgreSQL
+    pg_cursor.execute("SELECT id, user_name, order_id, order_name, description, bad_order_image FROM feedbacks")
+    rows = pg_cursor.fetchall()
+
+    for row in rows:
+        # Convert binary image to base64 string (safe for MongoDB)
+        image_data = base64.b64encode(row[5]).decode('utf-8') if row[5] else None
+
+        document = {
+            "id": row[0],
+            "user_name": row[1],
+            "order_id": row[2],
+            "order_name": row[3],
+            "description": row[4],
+            "bad_order_image": image_data
+        }
+        mongo_collection.insert_one(document)
+
+    pg_cursor.close()
+    pg_conn.close()
+    mongo_client.close()
+
+    print("✅ PostgreSQL 'feedbacks' table synced to MongoDB 'feedbacks' collection successfully.")
+    messagebox.showinfo('Done','Successfull')
+
+
+def sync_feedbacks_mongo_to_postgres():
+    # PostgreSQL connection
+    pg_conn = psycopg2.connect(
+        dbname='dbms_project',
+        user='postgres',
+        password='pgadmin4',
+        host='127.0.0.1',
+        port='5432'
+    )
+    pg_cursor = pg_conn.cursor()
+
+    # MongoDB connection
+    mongo_client = MongoClient("mongodb://localhost:27017/")
+    mongo_db = mongo_client["dbms_proj"]
+    mongo_collection = mongo_db["feedbacks"]
+
+    # Optional: Clear existing PostgreSQL data
+    pg_cursor.execute("truncate table feedbacks cascade")
+    pg_cursor.execute("delete from del_feedbacks")
+
+    for doc in mongo_collection.find():
+        # Decode base64 image back to binary
+        image_data = base64.b64decode(doc.get("bad_order_image")) if doc.get("bad_order_image") else None
+
+        pg_cursor.execute("""
+            INSERT INTO feedbacks (id, user_name, order_id, order_name, description, bad_order_image)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                user_name = EXCLUDED.user_name,
+                order_id = EXCLUDED.order_id,
+                order_name = EXCLUDED.order_name,
+                description = EXCLUDED.description,
+                bad_order_image = EXCLUDED.bad_order_image
+        """, (
+            doc.get("id"),
+            doc.get("user_name"),
+            doc.get("order_id"),
+            doc.get("order_name"),
+            doc.get("description"),
+            image_data
+        ))
+
+    pg_conn.commit()
+    pg_cursor.close()
+    pg_conn.close()
+    mongo_client.close()
+
+    print("✅ MongoDB 'feedbacks' collection synced to PostgreSQL 'feedbacks' table successfully.")
+    messagebox.showinfo('Done', 'Successfull')
+
 # After successful login, show the main app
 def open_main_screen():
     login_window.destroy()
 
     main_app = tk.Tk()
     main_app.title("Order Synchronization Panel")
-    main_app.geometry("1100x750")  # Wider window for full text buttons
+    main_app.geometry("1100x750")
+
+    # --------- Canvas & Scrollbar Setup ---------
+    main_canvas = tk.Canvas(main_app)
+    main_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    scrollbar = tk.Scrollbar(main_app, orient=tk.VERTICAL, command=main_canvas.yview)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    main_canvas.configure(yscrollcommand=scrollbar.set)
+    main_canvas.bind('<Configure>', lambda e: main_canvas.configure(scrollregion=main_canvas.bbox("all")))
+
+    scrollable_frame = tk.Frame(main_canvas)
+    main_canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    # ------------------------------------------------
 
     # Title Label
-    sync_label = tk.Label(main_app, text="Order Synchronization Panel", font=('Arial', 24, 'bold'), fg='purple')
+    sync_label = tk.Label(scrollable_frame, text="Order Synchronization Panel", font=('Arial', 24, 'bold'), fg='purple')
     sync_label.pack(pady=20)
 
     # Main frame to hold left and right frames
-    main_frame = tk.Frame(main_app)
+    main_frame = tk.Frame(scrollable_frame)
     main_frame.pack(pady=20)
 
-    # Left Frame (PostgreSQL to MongoDB)
     left_frame = tk.Frame(main_frame)
     left_frame.pack(side='left', padx=50)
 
-    # Right Frame (MongoDB to PostgreSQL)
     right_frame = tk.Frame(main_frame)
     right_frame.pack(side='right', padx=50)
 
-    # ----- Left Side: PostgreSQL ➔ MongoDB (Blue Buttons) -----
+    # PostgreSQL ➔ MongoDB
+    tk.Button(left_frame, text="Sync Orders from PostgreSQL to MongoDB", command=sync_orders, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
+    tk.Button(left_frame, text="Sync Users from PostgreSQL to MongoDB", command=sync_users, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
+    tk.Button(left_frame, text="Sync Order Items from PostgreSQL to MongoDB", command=sync_order_items_to_mongodb, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
+    tk.Button(left_frame, text="Sync Checkouts from PostgreSQL to MongoDB", command=sync_checkouts_to_mongodb, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
+    tk.Button(left_frame, text="Sync Menu Items from PostgreSQL to MongoDB", command=sync_postgres_to_mongo, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
+    tk.Button(left_frame, text="Sync Feedbacks from PostgreSQL to MongoDB", command=sync_feedbacks_postgres_to_mongo, font=('Arial', 14), width=38, height=2, bg='blue', fg='white').pack(pady=10)
 
-    sync_orders_button = tk.Button(left_frame, text="Sync Orders from PostgreSQL to MongoDB", command=sync_orders, font=('Arial', 14), width=38, height=2, bg='blue', fg='white')
-    sync_orders_button.pack(pady=10)
+    # MongoDB ➔ PostgreSQL
+    tk.Button(right_frame, text="Sync Orders from MongoDB to PostgreSQL", command=sync_orders_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
+    tk.Button(right_frame, text="Sync Users from MongoDB to PostgreSQL", command=sync_users_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
+    tk.Button(right_frame, text="Sync Order Items from MongoDB to PostgreSQL", command=sync_order_items_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
+    tk.Button(right_frame, text="Sync Checkouts from MongoDB to PostgreSQL", command=sync_checkouts_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
+    tk.Button(right_frame, text="Sync Menu Items from MongoDB to PostgreSQL", command=sync_mongo_to_postgres, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
+    tk.Button(right_frame, text="Sync Feedbacks from MongoDB to PostgreSQL", command=sync_feedbacks_mongo_to_postgres, font=('Arial', 14), width=38, height=2, bg='red', fg='white').pack(pady=10)
 
-    sync_users_button = tk.Button(left_frame, text="Sync Users from PostgreSQL to MongoDB", command=sync_users, font=('Arial', 14), width=38, height=2, bg='blue', fg='white')
-    sync_users_button.pack(pady=10)
+    # Admin Control Section
+    admin_button_frame = tk.Frame(scrollable_frame)
+    admin_button_frame.pack(pady=30)
 
-    sync_order_items_mongo_button = tk.Button(left_frame, text="Sync Order Items from PostgreSQL to MongoDB", command=sync_order_items_to_mongodb, font=('Arial', 14), width=38, height=2, bg='blue', fg='white')
-    sync_order_items_mongo_button.pack(pady=10)
+    row1 = tk.Frame(admin_button_frame)
+    row1.pack(pady=10)
 
-    sync_checkouts_mongo_button = tk.Button(left_frame, text="Sync Checkouts from PostgreSQL to MongoDB", command=sync_checkouts_to_mongodb, font=('Arial', 14), width=38, height=2, bg='blue', fg='white')
-    sync_checkouts_mongo_button.pack(pady=10)
+    tk.Button(row1, text="Add New Admin", command=add_new_admin, font=('Arial', 14), width=25, height=2, bg='purple', fg='white').pack(side=tk.LEFT, padx=20)
+    tk.Button(row1, text="View Data", command=open_data_view_screen, font=('Arial', 14), width=25, height=2, bg='green', fg='white').pack(side=tk.LEFT, padx=20)
 
-    # ----- Right Side: MongoDB ➔ PostgreSQL (Red Buttons) -----
+    row2 = tk.Frame(admin_button_frame)
+    row2.pack(pady=10)
 
-    sync_orders_pg_button = tk.Button(right_frame, text="Sync Orders from MongoDB to PostgreSQL", command=sync_orders_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white')
-    sync_orders_pg_button.pack(pady=10)
-
-    sync_users_pg_button = tk.Button(right_frame, text="Sync Users from MongoDB to PostgreSQL", command=sync_users_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white')
-    sync_users_pg_button.pack(pady=10)
-
-    sync_order_items_pg_button = tk.Button(right_frame, text="Sync Order Items from MongoDB to PostgreSQL", command=sync_order_items_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white')
-    sync_order_items_pg_button.pack(pady=10)
-
-    sync_checkouts_pg_button = tk.Button(right_frame, text="Sync Checkouts from MongoDB to PostgreSQL", command=sync_checkouts_to_postgresql, font=('Arial', 14), width=38, height=2, bg='red', fg='white')
-    sync_checkouts_pg_button.pack(pady=10)
-
-    # ----- Admin Control (at Bottom) -----
-
-    add_admin_button = tk.Button(main_app, text="Add New Admin", command=add_new_admin, font=('Arial', 14), width=20, height=2, bg='purple', fg='white')
-    add_admin_button.pack(pady=30)
+    tk.Button(row2, text="Upload & Sync Data to Realtime DB", command=open_realtime_database_upload_screen, font=('Arial', 14), width=40, height=2, bg='green', fg='white').pack(side=tk.LEFT, padx=20)
+    tk.Button(row2, text="Open Deleted Data Screen", command=open_del_screen, font=('Arial', 14), width=35, height=2, bg='green', fg='white').pack(side=tk.LEFT, padx=20)
 
     main_app.mainloop()
+
+
+
 
 
 
