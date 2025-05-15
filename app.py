@@ -5,7 +5,7 @@ import psycopg2.extras
 from connection import get_db_connection, initialize_database
 import os
 
-us =[]
+us =['Guest']
 
 app = Flask(__name__)
 app.secret_key = 'byteandbite_secret_key'  # Required for session
@@ -154,7 +154,7 @@ def layout():
 def feedback():
     if request.method == 'POST':
         # Retrieve form data
-        user_name = request.form['user_name']
+        user_name = us[-1]
         order_id = request.form['order_id']
         order_name = request.form['order_name']
         description = request.form.get('description', '')
@@ -465,7 +465,7 @@ def checkout():
                 """, (order_id, item['name'], item['quantity']))
 
             # Get name from the form directly
-            username = request.form.get('name')
+            username = us[-1]
 
             # Insert into checkouts
             cur.execute("""
