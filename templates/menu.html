@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Byte & Bite AI Dining Revolution</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for cart icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #3498db;
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #eaeaea;
+            --secondary-text-color: #b3b3b3;
+            --nav-height: 60px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1a1a1a;
+            padding: 0 20px;
+            height: var(--nav-height);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
+        .cart-icon:hover {
+            color: var(--primary-color);
+        }
+        .cart-icon #cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-color);
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+        }
+        /* Hero */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1600&h=900');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .cta-button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+        .cta-button:hover {
+            background: #c0392b;
+        }
+        /* Category Filter */
+        .category-filter {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0;
+            padding: 0 20px;
+        }
+        .category-btn {
+            background: #2a2a2a;
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        .category-btn:hover {
+            background: #3a3a3a;
+        }
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        /* Menu Grid */
+        .menu-container {
+            max-width: 1200px;
+            margin: 20px auto 40px;
+            padding: 0 20px;
+        }
+        .menu-heading {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .card-body h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
+        .card-body p {
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            color: var(--secondary-text-color);
+        }
+        .price-add {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price-add .price {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .price-add button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .price-add button:hover {
+            transform: translateY(-2px);
+            background: #c0392b;
+        }
+        /* Cart Panel */
+        .cart-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 300px;
+            height: 100%;
+            background: #1a1a1a;
+            box-shadow: -3px 0 8px rgba(0,0,0,0.4);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .cart-panel.open {
+            transform: translateX(0);
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .cart-header h2 {
+            margin: 0;
+        }
+        .close-cart {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.3s;
+        }
+        .close-cart:hover {
+            color: var(--primary-color);
+        }
+        .cart-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        .cart-item button {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        .cart-total {
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        .checkout-btn {
+            background: var(--secondary-color);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .checkout-btn:hover {
+            background: #2980b9;
+        }
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: var(--secondary-text-color);
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        /* No results message */
+        .no-results {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+            color: var(--secondary-text-color);
+        }
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            .category-filter {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+                justify-content: flex-start;
+            }
+            .category-btn {
+                flex-shrink: 0;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Byte & <span style="color: var(--secondary-color); font-weight: 700;">Bite</span></div>
+        <div class="cart-icon" onclick="toggleCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">0</span>
+        </div>
+    </nav>
+    <header class="hero">
+    <h1>Welcome to Byte &amp; Bite</h1>
+    <p>Where AI Meets Appetite</p>
+
+    <!-- Explore Menu Button -->
+    <a href="#menu-section" class="cta-button" style="margin-bottom: 20px;">Explore Menu</a>
+
+    <!-- View Orders Button -->
+    <div id="view-orders-btn" style="display: none; margin-top: 20px;">
+        <a href="{{ url_for('user_checkouts') }}" class="cta-button" style="background-color: var(--secondary-color);">
+            View Your Recent Order & Download Receipt
+        </a>
+    </div>
+</header>
+
+    <div id="menu-section">
+        <h2 class="menu-heading">Our Menu</h2>
+        <div class="category-filter">
+            <button class="category-btn active" data-category="all">All Items</button>
+            <button class="category-btn" data-category="mains">Main Dishes</button>
+            <button class="category-btn" data-category="sides">Side Dishes</button>
+            <button class="category-btn" data-category="desserts">Desserts</button>
+            <button class="category-btn" data-category="drinks">Drinks</button>
+        </div>
+        <main class="menu-container">
+            <div class="menu-grid" id="menu-grid">
+                {% for item in menu_items %}
+                <div class="card" data-category="{{ item.category }}">
+                    <img src="{{ item.image }}" alt="{{ item.name }}">
+                    <div class="card-body">
+                        <h3>{{ item.name }}</h3>
+                        <p>{{ item.description }}</p>
+                        <div class="price-add">
+                            <span class="price">${{ '%.2f'|format(item.price) }}</span>
+                            <button onclick="addItemToCart('{{ item.id }}')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+    <div class="cart-panel" id="cart-panel">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be inserted here -->
+        </div>
+        <div class="cart-total">Total: $<span id="cart-total">0.00</span></div>
+        <button class="checkout-btn" onclick="processCheckout()">Checkout</button>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Byte & Bite. All rights reserved.</p>
+        <p>Contact: +1 (555) 123-4567 | info@byteandbite.ai</p>
+        <p><a href="{{ url_for('feedback') }}" class="footer-link" style="color: white;">Give Feedback</a></p>
+    </footer>
+
+    <script>
+        // Load cart on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            setupCategoryFilter();
+        });
+        
+        function loadCart() {
+            fetch('/cart')
+                .then(response => response.json())
+                .then(data => {
+                    updateCartUI(data.cart, data.total, data.count);
+                })
+                .catch(error => console.error('Error loading cart:', error));
+        }
+        
+        function updateCartUI(cart, total, count) {
+            const cartItemsContainer = document.getElementById('cart-items');
+            cartItemsContainer.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty</p>';
+            } else {
+                cart.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'cart-item';
+                    itemDiv.innerHTML = `
+                        <span>${item.name} x ${item.quantity}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        <button onclick="removeItemFromCart(${item.id})">&times;</button>
+                    `;
+                    cartItemsContainer.appendChild(itemDiv);
+                });
+            }
+
+            
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+            document.getElementById('cart-count').innerText = count;
+        }
+        
+        function addItemToCart(itemId) {
+            fetch(`/cart/add/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data.cart, data.total, data.count);
+                }
+            })
+            .catch(error => console.error('Error adding item to cart:', error));
+        }
+        
+        function removeItemFromCart(itemId) {
+            fetch(`/cart/remove/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartUI(data.cart, data.total, data.count);
+                }
+            })
+            .catch(error => console.error('Error removing item from cart:', error));
+        }
+        
+        function processCheckout() {
+    fetch('/checkout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you! Your order has been placed.');
+            updateCartUI([], 0, 0);
+            toggleCart();
+
+            // ✅ Show the "View Orders" button now
+            document.getElementById('view-orders-btn').style.display = 'block';
+        } else {
+            alert(data.message || 'Error processing your order');
+        }
+    })
+    .catch(error => {
+        console.error('Error during checkout:', error);
+        alert('There was an error processing your order. Please try again.');
+    });
+}
+
+
+        
+        function toggleCart() {
+            document.getElementById('cart-panel').classList.toggle('open');
+        }
+        
+        function setupCategoryFilter() {
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const category = this.getAttribute('data-category');
+                    filterMenuByCategory(category);
+                });
+            });
+        }
+        
+        function filterMenuByCategory(category) {
+            if (category === 'all') {
+                // Show all cards without an AJAX call
+                const allCards = document.querySelectorAll('.card');
+                allCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+            } else {
+                // For specific categories, filter directly in the DOM
+                const allCards = document.querySelectorAll('.card');
+                allCards.forEach(card => {
+                    if (card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        }
+    </script>
+
+
+<!-- Floating Chatbot -->
+<div id="chatbot-container">
+    <div id="chat-icon" onclick="toggleChat()">
+        💬
+    </div>
+    <div id="chat-window">
+        <div id="chat-header">ByteBot 🤖</div>
+        <div id="chat-body"></div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    #chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    #chat-icon {
+        background: #e74c3c;
+        color: white;
+        font-size: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: transform 0.3s;
+    }
+
+    #chat-icon:hover {
+        transform: scale(1.1);
+    }
+
+    #chat-window {
+        display: none;
+        flex-direction: column;
+        width: 320px;
+        height: 420px;
+        background: #1e1e1e;
+        color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        margin-bottom: 10px;
+    }
+
+    #chat-header {
+        background: #e74c3c;
+        padding: 12px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    #chat-body {
+        flex-grow: 1;
+        padding: 10px;
+        overflow-y: auto;
+        font-size: 0.9em;
+    }
+
+    #chat-body .user, #chat-body .bot {
+        margin-bottom: 10px;
+        padding: 8px;
+        border-radius: 6px;
+        max-width: 90%;
+        line-height: 1.4;
+    }
+
+    .user {
+        background: #3498db;
+        align-self: flex-end;
+        text-align: right;
+        margin-left: auto;
+    }
+
+    .bot {
+        background: #2c2c2c;
+        align-self: flex-start;
+        margin-right: auto;
+    }
+
+    #chat-input-area {
+        display: flex;
+        border-top: 1px solid #444;
+    }
+
+    #chat-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: none;
+        background: #2c2c2c;
+        color: white;
+        font-size: 0.9em;
+    }
+
+    #chat-input:focus {
+        outline: none;
+    }
+
+    #chat-input-area button {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    function toggleChat() {
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.style.display = (chatWindow.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        const chatBody = document.getElementById('chat-body');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'user';
+        userMsg.textContent = message;
+        chatBody.appendChild(userMsg);
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        input.value = '';
+
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'bot';
+            botMsg.textContent = data.reply;
+            chatBody.appendChild(botMsg);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        })
+        .catch(err => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'bot';
+            botMsg.textContent = 'Oops, something went wrong.';
+            chatBody.appendChild(botMsg);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        });
+    }
+</script>
+
+</body>
+</html>
