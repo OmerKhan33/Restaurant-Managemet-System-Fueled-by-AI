@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #121212; /* Black background */
+            color: #eaeaea; /* Light text */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1a1a1a; /* Black navbar */
+            padding: 0 20px;
+            height: 60px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar a, .navbar span {
+            color: #eaeaea;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        .logo-modern {
+            height: 40px;
+        }
+
+        .brand-name {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #e74c3c; /* Red brand name */
+            margin-left: 10px;
+        }
+
+        .feedback-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #1a1a1a; /* Black card background */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .feedback-container h2 {
+            color: #e74c3c; /* Red heading */
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #eaeaea; /* Light text for labels */
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a; /* Darker black for inputs */
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #eaeaea; /* Light text for input content */
+            font-size: 16px;
+        }
+
+        .form-group input[type="file"] {
+            padding: 5px;
+            background: none; /* No background for file input */
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #e74c3c; /* Red button */
+            color: #eaeaea; /* Light text */
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #c0392b; /* Darker red on hover */
+        }
+
+        .error-message {
+            color: #f44336; /* Bright red for errors */
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .login-prompt {
+            text-align: center;
+            color: #eaeaea;
+        }
+
+        .login-prompt a {
+            color: #e74c3c; /* Red for link */
+            text-decoration: none;
+        }
+
+        .login-prompt a:hover {
+            color: #c0392b; /* Darker red on hover */
+        }
+
+        footer {
+            background: #1a1a1a; /* Black footer */
+            color: #b3b3b3; /* Secondary text */
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+
+        footer a {
+            color: #e74c3c; /* Red for YouTube link */
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #c0392b; /* Darker red on hover */
+        }
+
+        .go-back-btn {
+            background-color: #e74c3c; /* Red button */
+            color: #eaeaea;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .go-back-btn:hover {
+            background-color: #c0392b;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Feedback</h1>
+        {% if user %}
+            <p>You are logged in as {{ user }}.</p>
+        {% else %}
+            <p>Please log in to submit feedback.</p>
+        {% endif %}
+    </header>
+
+    <main>
+        <div class="feedback-container">
+            <h2> Feedback</h2>
+            <form action="{{ url_for('feedback') }}" method="post" enctype="multipart/form-data">
+                <!-- Name Field -->
+                <div class="form-group">
+                    <label for="user_name">Your Name:</label>
+                    <input type="text" id="user_name" name="user_name" required 
+                        value="{{ user if user else '' }}" {{ 'readonly' if user else '' }}>
+                </div>
+
+                <!-- Order ID Field -->
+                <div class="form-group">
+                    <label for="order_id">Order ID:</label>
+                    <input type="text" id="order_id" name="order_id" required>
+                </div>
+
+                <!-- Order Name Field -->
+                <div class="form-group">
+                    <label for="order_name">Order Name:</label>
+                    <input type="text" id="order_name" name="order_name" required>
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" cols="50"></textarea>
+                </div>
+
+                <!-- Image Upload Field -->
+                <div class="form-group">
+                    <label for="bad_order_image">Upload an Image (Optional):</label>
+                    <input type="file" id="bad_order_image" name="bad_order_image" accept="image/*">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    <button class="submit-btn" type="submit">Submit Feedback</button>
+                </div>
+            </form>
+
+            <a href="{{ url_for('menu') }}" class="go-back-btn">Go Back to Menu</a>
+        </div>
+    </main>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <footer>
+        <p>&copy; 2025 Byte and Bite. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

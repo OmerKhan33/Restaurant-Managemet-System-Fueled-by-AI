@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout - Byte & Bite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #3498db;
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #eaeaea;
+            --secondary-text-color: #b3b3b3;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar, .footer {
+            background: #1a1a1a;
+            color: var(--secondary-text-color);
+            text-align: center;
+            padding: 20px;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo { font-size: 1.5em; font-weight: 600; color: var(--primary-color); }
+        .logo-link, .nav-link, .back-to-menu { text-decoration: none; color: var(--text-color); }
+        .nav-link { margin-left: 20px; transition: color 0.3s; }
+        .nav-link:hover, .back-to-menu:hover { color: var(--primary-color); }
+        .checkout-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 768px) {
+            .checkout-container { grid-template-columns: 1fr; }
+        }
+        .order-summary, .checkout-form {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .section-title { margin-bottom: 20px; color: var(--primary-color); font-size: 1.5em; }
+        .order-item, .order-total {
+            display: flex; justify-content: space-between;
+            margin-bottom: 15px; border-bottom: 1px solid #2a2a2a; padding-bottom: 10px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-input, .form-select {
+            width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #3a3a3a;
+            border-radius: 5px; color: var(--text-color); font-size: 1em;
+        }
+        .form-submit {
+            width: 100%; padding: 15px; background: var(--secondary-color);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
+        }
+        .alert { padding: 12px; border-radius: 5px; margin-bottom: 20px; grid-column: 1 / -1; }
+        .alert-success { background: rgba(46, 204, 113, 0.2); border: 1px solid var(--success-color); color: var(--success-color); }
+        .empty-cart { text-align: center; padding: 40px 0; color: var(--secondary-text-color); }
+        #receipt-btn {
+            margin-top: 15px;
+            display: none;
+            padding: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('checkout') }}" class="logo-link">
+            <div class="logo">Byte & <span style="color: var(--secondary-color); font-weight: 700;">Bite</span></div>
+        </a>
+        <div>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('menu') }}" class="nav-link">Menu</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Log Out</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">Log In</a>
+                <a href="{{ url_for('signup') }}" class="nav-link">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        {% if not cart or cart|length == 0 %}
+            <div class="empty-cart" style="grid-column: 1 / -1;">
+                <h2>Your cart is empty</h2>
+                <a href="{{ url_for('checkout') }}" class="back-to-menu">Back to Menu</a>
+            </div>
+        {% else %}
+            <div class="order-summary">
+                <h2 class="section-title">Order Summary</h2>
+                {% for item in cart %}
+                <div class="order-item">
+                    <div>{{ item.name }} (x{{ item.quantity }})</div>
+                    <div>${{ '%.2f'|format(item.price * item.quantity) }}</div>
+                </div>
+                {% endfor %}
+                <div class="order-total">
+                    <span>Total</span>
+                    <span>${{ '%.2f'|format(total) }}</span>
+                </div>
+            </div>
+
+            <div class="checkout-form">
+                <h2 class="section-title">Delivery Information</h2>
+                <form id="checkout-form" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-input" required value="{{ session.get('username', '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" name="phone" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Delivery Address</label>
+                        <textarea name="address" class="form-input" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment" class="form-select" required>
+                            <option value="">Select payment method</option>
+                            <option value="cash">Cash on Delivery</option>
+                            <option value="card">Credit/Debit Card</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="form-submit">Place Order</button>
+                    <button type="button" id="receipt-btn">Download Receipt (PDF)</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Byte & Bite. All rights reserved.</p>
+        <p>Contact: +1 (555) 123-4567 | info@byteandbite.ai</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('{{ url_for("checkout") }}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+    if (data.success) {
+        alert('Order placed successfully!');
+        document.getElementById('receipt-btn').style.display = 'block';
+
+        // Show receipt on button click
+        document.getElementById('receipt-btn').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("Byte & Bite - Order Receipt", 20, 20);
+
+            doc.setFontSize(12);
+            doc.text("Customer: {{ session.get('username') }}", 20, 40);
+            doc.text("Order No: " + data.order_id, 20, 50);
+            doc.text("Items: " + data.item_names, 20, 60);
+            doc.text("Time: " + new Date().toLocaleString(), 20, 70);
+
+            doc.save("receipt_bytebite.pdf");
+        });
+
+        // Redirect to menu after short delay
+        setTimeout(() => {
+            window.location.href = "{{ url_for('checkout') }}";
+        }, 3000); // 3-second delay before redirecting
+
+    } else {
+        alert(data.message || 'An error occurred');
+    }
+})
+
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+
+
+    </script>
+
+
+<script>
+
+document.getElementById("checkout-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    fetch("/checkout", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Order placed successfully!");
+            // 🔥 Automatically download the PDF receipt
+            window.location.href = `/receipt/${data.order_id}`;
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert("An error occurred during checkout.");
+    });
+});
+</script>
+
+</body>
+</html>
